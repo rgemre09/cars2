@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prolog коли</title>
+  <script src="https://cdn.jsdelivr.net/gh/tau-prolog/tau-prolog@v0.3.1/modules/core.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/tau-prolog/tau-prolog@v0.3.1/modules/lists.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    .car-gif {
+      width: 300px;
+      height: auto;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Prolog коли</h1>
+  <textarea id="query" rows="2" cols="60" placeholder="Пример: car(X)."></textarea><br/>
+  <button onclick="runQuery()">Търси</button>
+  <div id="result"></div>
+  <script>
+    const knowledge = `
+      car(tesla).
+      car(bmw).
+      car(ferrari).
+      electric(tesla).
+      sports(ferrari).
+      luxury(bmw).
+      is_vehicle(X) :- car(X).
+    `;
+
+    const carAnimations = {
+      tesla: '<img src="https://media.giphy.com/media/l0K4kWJirrpUuQ1bi/giphy.gif" class="car-gif" alt="Tesla" />',
+      bmw: '<img src="https://media.giphy.com/media/3o7TKxohgXznoTQVOw/giphy.gif" class="car-gif" alt="BMW" />',
+      ferrari: '<img src="https://media.giphy.com/media/kdFc8fubgS31b8DsVu/giphy.gif" class="car-gif" alt="Ferrari" />'
+    };
+
+    const session = pl.create();
+    session.consult(knowledge);
+
+    function runQuery() {
+      const query = document.getElementById("query").value;
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = "Обработка...";
+      session.query(query);
+      session.answers(answer => {
+        if (answer === false || answer === null) {
+          resultDiv.innerHTML = "Няма резултат.";
+        } else {
+          const variables = pl.format_answer(answer);
+          const match = /X\s?=\s?(\w+)/.exec(variables);
+          if (match && carAnimations[match[1]]) {
+            resultDiv.innerHTML = "Резултат: " + match[1] + "<br>" + carAnimations[match[1]];
+          } else {
+            resultDiv.innerHTML = "Резултат: " + variables;
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
