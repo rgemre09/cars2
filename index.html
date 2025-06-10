@@ -2,62 +2,79 @@
 <html lang="bg">
 <head>
   <meta charset="UTF-8" />
-  <title>Prolog коли</title>
-  <script src="https://cdn.jsdelivr.net/gh/tau-prolog/tau-prolog@v0.3.1/modules/core.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/tau-prolog/tau-prolog@v0.3.1/modules/lists.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prolog Автомобили</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
+      font-family: sans-serif;
       padding: 20px;
+      background: #f0f0f0;
     }
     .car-gif {
       width: 300px;
-      height: auto;
+      margin-top: 20px;
+    }
+    #result {
       margin-top: 20px;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/tau-prolog@0.3.2/modules/core.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tau-prolog@0.3.2/modules/lists.js"></script>
 </head>
 <body>
-  <h1>Prolog коли</h1>
-  <textarea id="query" rows="2" cols="60" placeholder="Пример: car(X)."></textarea><br/>
+  <h1>Prolog Автомобили</h1>
+  <p>Въведи Prolog заявка, напр. <code>is_sports(X).</code></p>
+  <input type="text" id="queryInput" placeholder="Въведи заявка..." size="40"/>
   <button onclick="runQuery()">Търси</button>
+
   <div id="result"></div>
+
   <script>
+    // Prolog база със знания за коли
     const knowledge = `
       car(tesla).
-      car(bmw).
-      car(ferrari).
-      electric(tesla).
-      sports(ferrari).
-      luxury(bmw).
-      is_vehicle(X) :- car(X).
+      car(ford_mustang).
+      car(bmw_x5).
+      car(lamborghini).
+      car(toyota_corolla).
+
+      is_electric(tesla).
+      is_sports(ford_mustang).
+      is_sports(lamborghini).
+      is_suv(bmw_x5).
+      is_economy(toyota_corolla).
+
+      is_car(X) :- car(X).
     `;
 
+    // GIF анимации за коли
     const carAnimations = {
-      tesla: '<img src="https://media.giphy.com/media/l0K4kWJirrpUuQ1bi/giphy.gif" class="car-gif" alt="Tesla" />',
-      bmw: '<img src="https://media.giphy.com/media/3o7TKxohgXznoTQVOw/giphy.gif" class="car-gif" alt="BMW" />',
-      ferrari: '<img src="https://media.giphy.com/media/kdFc8fubgS31b8DsVu/giphy.gif" class="car-gif" alt="Ferrari" />'
+      tesla: '<img src="https://media.giphy.com/media/l0HlNQ03J5JxX6lva/giphy.gif" class="car-gif" alt="Tesla" />',
+      ford_mustang: '<img src="https://media.giphy.com/media/J1kWk7ZyXxD9y/giphy.gif" class="car-gif" alt="Mustang" />',
+      bmw_x5: '<img src="https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif" class="car-gif" alt="BMW X5" />',
+      lamborghini: '<img src="https://media.giphy.com/media/fwbZnTftCXVocKzfxR/giphy.gif" class="car-gif" alt="Lamborghini" />',
+      toyota_corolla: '<img src="https://media.giphy.com/media/VbnUQpnihPSIgIXuZv/giphy.gif" class="car-gif" alt="Toyota Corolla" />'
     };
 
+    // Създаваме сесия с Tau Prolog
     const session = pl.create();
     session.consult(knowledge);
 
     function runQuery() {
-      const query = document.getElementById("query").value;
+      const query = document.getElementById("queryInput").value.trim();
       const resultDiv = document.getElementById("result");
-      resultDiv.innerHTML = "Обработка...";
+      resultDiv.innerHTML = "";
+
       session.query(query);
       session.answers(answer => {
-        if (answer === false || answer === null) {
-          resultDiv.innerHTML = "Няма резултат.";
-        } else {
-          const variables = pl.format_answer(answer);
-          const match = /X\s?=\s?(\w+)/.exec(variables);
-          if (match && carAnimations[match[1]]) {
-            resultDiv.innerHTML = "Резултат: " + match[1] + "<br>" + carAnimations[match[1]];
+        if (answer === false) {
+          resultDiv.innerHTML = "<p>Няма резултати.</p>";
+        } else if (pl.type.is_substitution(answer)) {
+          const x = answer.lookup("X");
+          if (x && carAnimations[x.id]) {
+            resultDiv.innerHTML = carAnimations[x.id];
           } else {
-            resultDiv.innerHTML = "Резултат: " + variables;
+            resultDiv.innerHTML = `<p>Резултат: ${x ? x.id : 'неизвестен'}</p>`;
           }
         }
       });
